@@ -45,15 +45,13 @@ def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epo
             avg_model_loss +=loss.item()
 
             if (i+1)%pre_freq == 0:
-                print('Epoch{%d/%d} | Batch {%d/%d} | Model_loss:{:.4f}'.format(epoch+1, stop_epoch, i+1, len(data_loader), avg_model_loss/float(i+1)))
+                print('Epoch:{:d} / {:d} | Batch {:d}/{:d} | Model_loss:{:.4f}'.format(epoch+1, stop_epoch, i+1, len(data_loader), avg_model_loss/float(i+1)))
 
             # validate
             model.eval()
             with torch.no_grad():
                 acc = model.test_loop(val_loader)
             print(acc)
-
-
 
 
 
@@ -70,7 +68,7 @@ def chose_label_file(dataset):
     :return:
     """
     #TODO
-    dic = {'cars':'cars/all.csv','miniImagenet':'miniImageNet/all.csv','cub':'CUB_200_2011/all.csv','places':'places_stand_365/all.csv'}
+    dic = {'cars':'cars/all.csv','miniImagenet':'miniImageNet/all.csv','cub':'CUB_200_2011/all.csv','places':'places365_standard/all.csv'}
     assert isinstance(dataset,(list,str))
     if isinstance(dataset, list):
         return [dic[i] for i in dataset]
@@ -108,6 +106,7 @@ def main():
     val_loader = val_data_manager.get_data_loader()
 
     # model
+    print("--- load model ---")
     feature_model = backbone.Conv4NP()
     model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query)
 

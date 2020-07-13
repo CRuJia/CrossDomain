@@ -29,7 +29,7 @@ class SetDataManager(DataManager):
         # self.n_support = n_support
         self.n_episode = n_episode
 
-    def get_data_loader(self,aug):
+    def get_data_loader(self, aug=False):
         transform = transforms.Compose([
         transforms.Resize((84,84)),
         transforms.ToTensor(),
@@ -39,7 +39,7 @@ class SetDataManager(DataManager):
             dataset = MultiSetDataset(data_files=self.data_file, batch_size=self.batch_size, transform=transform)
             sampler = MultiEpisodicBatchSampler(dataset.lens(), self.n_way, self.n_episode)
         else:
-            dataset = SetDataset(datafile=self.data_file, batch_size=self.batch_size, transform=transform)
+            dataset = SetDataset(data_file=self.data_file, batch_size=self.batch_size, transform=transform)
             sampler = EpisodicBatchSampler(len(dataset), self.n_way, self.n_episode)
         data_loader_params = dict(batch_sampler = sampler, num_workers=4)
         data_loader = DataLoader(dataset, **data_loader_params)

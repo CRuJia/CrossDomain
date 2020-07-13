@@ -35,11 +35,11 @@ class MetaTemplate(nn.Module):
             z_all = self.feature.forward(x)
             z_all = z_all.view(self.n_way, self.n_support+self.n_query, -1)
 
-        print(z_all.shape)
+        # print(z_all.shape)
         z_support = z_all[:, :self.n_support]
         z_query = z_all[:, self.n_support:]
-        print("z_support", z_support.shape)
-        print("z_query", z_query.shape)
+        # print("z_support", z_support.shape)
+        # print("z_query", z_query.shape)
 
 
         return z_support,z_query

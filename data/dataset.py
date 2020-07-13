@@ -53,7 +53,7 @@ class SubDataset(Dataset):
 
 
 class SetDataset(Dataset):
-    def __init__(self,data_file, batch_size, transform):
+    def __init__(self, data_file, batch_size, transform):
         df = pd.read_csv(os.path.join(DATA_DIR, data_file))
         self.images = list(df['filename'])
         self.labels = list(df['label'])
@@ -94,7 +94,7 @@ class MultiSetDataset(Dataset):
             #TODO 是否要添加下一行
             # labels = list(map(lambda x:x+len(self.cl_list),labels))#不同数据集之间的类别 标签偏移
             cl_list = np.unique(labels).tolist()
-            self.cl_list = np.concatenate(self.cl_list, cl_list)
+            self.cl_list = np.concatenate((self.cl_list, cl_list))
 
             sub_meta = {}
             for cl in cl_list:
