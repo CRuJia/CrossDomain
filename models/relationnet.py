@@ -25,6 +25,7 @@ class RelationNet(MetaTemplate):
         self.method = 'RelationNet'
 
     def set_forward(self, x, is_feature=False):
+        # print("set_forward x.data.device:",x.data.device)
         #get features
         z_support, z_query = self.parse_feature(x, is_feature)
         z_support = z_support.contiguous()

@@ -14,13 +14,13 @@ def parse_args(script):
     parser.add_argument("--n_query", default=5, type=int, help="number of labeled data in each class in query set")
     parser.add_argument("--n_episode", default=100, type=int, help="") #TODO
     parser.add_argument('--seed', default=1, type=int, help="random seed")
-    parser.add_argument("--use_cuda", default=False, type=bool, help="")
+    parser.add_argument("--use_cuda", default=True, type=bool, help="")
 
 
     if script == 'train':
         # parser.add_argument('--num_classes', default=200, type=int, help="total number of classes in softmax, only used in baseline")
         parser.add_argument("--start_epoch", default=0, type=int, help="starting epoch")
-        parser.add_argument("--end_epoch", default=10, type=int, help="stoping epoch")
+        parser.add_argument("--end_epoch", default=50, type=int, help="stoping epoch")
         parser.add_argument("--resume", default="",type=str, help="continuous from previous trained model with largest epoch")
         parser.add_argument("--reseme_epoch", default=1, type=int, help="")
 

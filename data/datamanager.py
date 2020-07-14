@@ -7,7 +7,7 @@ from abc import abstractmethod
 
 class DataManager:
     @abstractmethod
-    def get_data_loader(self, datafile, aug):
+    def get_data_loader(self, aug):
         pass
 
 class SimpleDataManager(DataManager):
@@ -16,7 +16,7 @@ class SimpleDataManager(DataManager):
         super(SimpleDataManager, self).__init__()
         self.batch_size = batch_size
 
-    def get_data_loader(self, aug):
+    def get_data_loader(self, aug=False):
         pass
 
 class SetDataManager(DataManager):
@@ -41,7 +41,7 @@ class SetDataManager(DataManager):
         else:
             dataset = SetDataset(data_file=self.data_file, batch_size=self.batch_size, transform=transform)
             sampler = EpisodicBatchSampler(len(dataset), self.n_way, self.n_episode)
-        data_loader_params = dict(batch_sampler = sampler, num_workers=4)
+        data_loader_params = dict(batch_sampler = sampler, num_workers=8)
         data_loader = DataLoader(dataset, **data_loader_params)
         return data_loader
 

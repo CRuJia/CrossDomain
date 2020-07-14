@@ -68,6 +68,9 @@ class ConvNetNopool(nn.Module):
 def Conv4NP():
     return ConvNetNopool(4)
 
+def Conv6NP():
+    return ConvNetNopool(6)
+
 def main():
     model = ConvNetNopool(6)
     x = torch.randn((10,3,84,84))

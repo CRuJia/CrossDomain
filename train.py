@@ -7,7 +7,7 @@ from data.datamanager import SetDataManager
 
 
 
-def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epoch, args,use_cuda=False):
+def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epoch, args,use_cuda=True):
     """
 
     :param base_data_manager:
@@ -47,11 +47,21 @@ def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epo
             if (i+1)%pre_freq == 0:
                 print('Epoch:{:d} / {:d} | Batch {:d}/{:d} | Model_loss:{:.4f}'.format(epoch+1, stop_epoch, i+1, len(data_loader), avg_model_loss/float(i+1)))
 
-            # validate
-            model.eval()
-            with torch.no_grad():
-                acc = model.test_loop(val_loader)
-            print(acc)
+
+        # validate
+        model.eval()
+        with torch.no_grad():
+            acc = model.test_loop(val_loader)
+            print('Epoch:{:d} / {:d} | ACC {:.4f}%'.format(epoch+1, stop_epoch,acc))
+
+        #save
+        if acc >max_acc:
+            print("best model! save...")
+            max_acc = acc
+            torch.save(model.state_dict(),'./Conv6_best_model.pth')
+
+
+
 
 
 
@@ -109,6 +119,10 @@ def main():
     print("--- load model ---")
     feature_model = backbone.Conv4NP()
     model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query)
+
+    if args.use_cuda:
+        model.cuda()
+        print("model load to GPU")
 
     start_epoch = args.start_epoch
     end_epoch = args.end_epoch

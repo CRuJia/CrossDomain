@@ -4,7 +4,7 @@ import numpy as np
 
 
 class MetaTemplate(nn.Module):
-    def __init__(self, model_func, n_way, n_support, n_query, use_cuda=False):
+    def __init__(self, model_func, n_way, n_support, n_query, use_cuda=True):
         super(MetaTemplate, self).__init__()
         self.n_way = n_way
         self.n_support = n_support
@@ -26,8 +26,8 @@ class MetaTemplate(nn.Module):
         return out
 
     def parse_feature(self, x, is_feature):
-        if self.use_cuda:
-            x = x.cuda()
+        # if self.use_cuda:
+        #     x = x.cuda()
         if is_feature:
             z_all = x
         else:
@@ -50,7 +50,7 @@ class MetaTemplate(nn.Module):
 
         topk_scores, topk_labels = scores.data.topk(1,1,True, True)
         topk_ind = topk_labels.cpu().numpy()
-        top1_correct = np.sum(topk_ind[:,0] == y_query)
+        top1_correct = np.sum(topk_ind[:, 0] == y_query)
         return float(top1_correct), len(y_query), loss.item()*len(y_query)
 
 
@@ -61,6 +61,8 @@ class MetaTemplate(nn.Module):
         acc_all = []
         iter_num = len(test_loader)
         for i,(x,_) in enumerate(test_loader):
+            if self.use_cuda:
+                x = x.cuda()
             correct_this, count_this, loss_this = self.correct(x)
             acc_all.append(correct_this/ count_this*100)
             loss += loss_this

@@ -137,7 +137,7 @@ class EpisodicBatchSampler(object):
 
 class MultiEpisodicBatchSampler(object):
     def __init__(self, n_classes, n_way, n_episodes):
-        self.n_classes = n_classes
+        self.n_classes = n_classes  #  each element is the number of classes of different domain
         self.n_way = n_way
         self.n_episodes = n_episodes
         self.n_domains = len(n_classes)
@@ -196,3 +196,4 @@ if __name__ == '__main__':
         # print("x:",x)
         print("y:", y)
         print(len(y))
+        print(len(data_loader))
