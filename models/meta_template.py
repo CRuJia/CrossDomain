@@ -50,7 +50,7 @@ class MetaTemplate(nn.Module):
 
         topk_scores, topk_labels = scores.data.topk(1,1,True, True)
         topk_ind = topk_labels.cpu().numpy()
-        top1_correct = np.sum(topk_ind[:0] == y_query)
+        top1_correct = np.sum(topk_ind[:,0] == y_query)
         return float(top1_correct), len(y_query), loss.item()*len(y_query)
 
 

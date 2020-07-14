@@ -147,11 +147,12 @@ def main():
 def relationnet_test():
     x = torch.randn((5, 6, 3, 84, 84)) #n_way=5, n_support+n_query=6
     feature_model = backbone.Conv4NP()
-    model = RelationNet(feature_model, n_way=5, n_support=3)
+    model = RelationNet(feature_model, n_way=5, n_support=3, n_query=3)
     # model.n_query = int(x.size(0)/model.n_way) - model.n_support #TODO
-    model.n_query = x.size(1) - model.n_support
+
     # model.parse_feature(x, is_feature=False)
     scors,loss = model.set_forward_loss(x)
+    print(scors.shape)
 
     # out = model(x)
     # print(out.shape)
