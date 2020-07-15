@@ -1,0 +1,78 @@
+{
+
+  "model_algorithm": "image_feature_extractor",
+
+  // 模型类型为PyTorch
+
+  "model_type": "PyTorch",
+
+  "runtime": "python3.6",
+
+  // 模型推理对外api说明,包括访问协议，url，请求方法，请求接口和返回接口等
+
+  "apis": [
+    {
+      "procotol": "http",
+      "url": "/",
+      "method": "post",
+      // 请求格式为表单图片上传，key值为'images',curl 示例为 curl -X POST http://
+
+      //{
+
+      //{
+
+      //endpoint
+
+      //}
+
+      //} -F images=@test.jpg
+
+      "request": {
+        "Content-type": "multipart/form-data",
+        "data": {
+          "type": "object",
+          "properties": {
+            "images": {
+              "type": "file"
+            }
+          }
+        }
+      },
+      // 返回格式为json，
+
+      //{
+
+      //  'feature':{
+
+      //      [0.1, -0.05, ..., 0.34]
+
+      //  }
+
+      //}
+
+      "response": {
+        "Content-type": "applicaton/json",
+        "data": {
+          "type": "object",
+          "properties": {
+            "output": {
+              "type": "object",
+              "properties": {
+                "feature": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+  ]
+
+}

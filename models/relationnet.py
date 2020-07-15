@@ -51,7 +51,7 @@ class RelationNet(MetaTemplate):
 
 
     def set_forward_loss(self, x):
-        y = torch.from_numpy(np.repeat(range(self.n_way), self.n_support)) #generate n_way*n_support data eg.[0,0,0,1,1,1,2,2,2,3,3,3,4,4,4] #n_way=5,n_support=3
+        y = torch.from_numpy(np.repeat(range(self.n_way), self.n_query)) #generate n_way*n_query data eg.[0,0,0,1,1,1,2,2,2,3,3,3,4,4,4] #n_way=5,n_support=3
 
         scores = self.set_forward(x)
         if self.loss_type == 'mse':

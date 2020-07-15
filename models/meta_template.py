@@ -4,7 +4,7 @@ import numpy as np
 
 
 class MetaTemplate(nn.Module):
-    def __init__(self, model_func, n_way, n_support, n_query, use_cuda=True):
+    def __init__(self, model_func, n_way, n_support, n_query, use_cuda=False):
         super(MetaTemplate, self).__init__()
         self.n_way = n_way
         self.n_support = n_support
@@ -26,8 +26,6 @@ class MetaTemplate(nn.Module):
         return out
 
     def parse_feature(self, x, is_feature):
-        # if self.use_cuda:
-        #     x = x.cuda()
         if is_feature:
             z_all = x
         else:

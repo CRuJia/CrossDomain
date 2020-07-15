@@ -4,8 +4,8 @@ from options import parse_args
 from models import backbone
 from models.relationnet import RelationNet
 from data.datamanager import SetDataManager
-
-
+from torchvision import models
+import torch.nn as nn
 
 def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epoch, args,use_cuda=True):
     """
@@ -65,12 +65,6 @@ def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epo
 
 
 
-
-
-
-
-
-
 def chose_label_file(dataset):
     """
 
@@ -108,6 +102,8 @@ def main():
     else:
         image_size = 224
 
+    image_size = 224
+
     train_few_shot_params = dict(n_way=args.train_n_way, n_support=args.n_support, n_query=args.n_query, n_episode=args.n_episode)
     base_data_manager = SetDataManager(image_size=image_size, **train_few_shot_params, data_file=train_files)
 
@@ -117,7 +113,14 @@ def main():
 
     # model
     print("--- load model ---")
-    feature_model = backbone.Conv4NP()
+    # feature_model = backbone.Conv4NP()
+
+    model_w_fc = models.resnet18(pretrained=False)
+    seq = list(model_w_fc.children())[:-1]
+    feature_model = nn.Sequential(*seq)
+
+    feature_model.final_feat_dim = [512, 1, 1]
+
     model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query)
 
     if args.use_cuda:

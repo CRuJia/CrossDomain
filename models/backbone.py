@@ -72,7 +72,7 @@ def Conv6NP():
     return ConvNetNopool(6)
 
 def main():
-    model = ConvNetNopool(6)
+    model = ConvNetNopool(4)
     x = torch.randn((10,3,84,84))
     y = model(x)
     print(y.shape) #torch.Size([10, 64, 19, 19])
