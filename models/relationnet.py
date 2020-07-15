@@ -8,8 +8,8 @@ import utils
 
 
 class RelationNet(MetaTemplate):
-    def __init__(self, model_func, n_way, n_support, n_query, loss_type='mse'):
-        super(RelationNet, self).__init__(model_func, n_way, n_support, n_query)
+    def __init__(self, model_func, n_way, n_support, n_query, loss_type='mse', use_cuda = True):
+        super(RelationNet, self).__init__(model_func, n_way, n_support, n_query, use_cuda=use_cuda)
 
         # loss function
         self.loss_type = loss_type  # mse or softmax
@@ -29,7 +29,8 @@ class RelationNet(MetaTemplate):
         #get features
         z_support, z_query = self.parse_feature(x, is_feature)
         z_support = z_support.contiguous()
-        #z_proto.shape: (n_way, c,w,h)
+        # print(z_support.shape)
+        # z_proto.shape: (n_way, c,w,h)
         z_proto = z_support.view(self.n_way, self.n_support, *self.feat_dim).mean(1) #the proto of class i used by mean
         # z_query.shape: (n_way*n_query, c,w,h)
         z_query = z_query.contiguous().view(self.n_way*self.n_query, *self.feat_dim)

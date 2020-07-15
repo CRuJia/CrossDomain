@@ -58,7 +58,7 @@ def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epo
         if acc >max_acc:
             print("best model! save...")
             max_acc = acc
-            torch.save(model.state_dict(),'./Conv6_best_model.pth')
+            torch.save(model.state_dict(),'./resnet18_best_model.pth')
 
 
 
@@ -116,12 +116,12 @@ def main():
     # feature_model = backbone.Conv4NP()
 
     model_w_fc = models.resnet18(pretrained=False)
-    seq = list(model_w_fc.children())[:-1]
+    seq = list(model_w_fc.children())[:-2]
     feature_model = nn.Sequential(*seq)
 
-    feature_model.final_feat_dim = [512, 1, 1]
+    feature_model.final_feat_dim = [512, 7, 7]
 
-    model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query)
+    model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query, use_cuda=args.use_cuda)
 
     if args.use_cuda:
         model.cuda()
