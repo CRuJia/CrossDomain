@@ -8,7 +8,7 @@ import utils
 
 
 class RelationNet(MetaTemplate):
-    def __init__(self, model_func, n_way, n_support, n_query, loss_type='mse', use_cuda = True):
+    def __init__(self, model_func, n_way, n_support, n_query, tf_path=None,loss_type='mse', use_cuda = True):
         super(RelationNet, self).__init__(model_func, n_way, n_support, n_query, use_cuda=use_cuda)
 
         # loss function
@@ -47,7 +47,6 @@ class RelationNet(MetaTemplate):
         replation_pairs = torch.cat((z_proto_ext,z_query_ext),2).view(-1, *extend_final_feat_dim)
         relations = self.relation_module(replation_pairs).view(-1, self.n_way)
         return relations
-
 
 
 
@@ -146,6 +145,7 @@ def main():
     out = relation(out)
     print(out.shape)
 
+
 def relationnet_test():
     x = torch.randn((5, 6, 3, 84, 84)) #n_way=5, n_support+n_query=6
     feature_model = backbone.Conv4NP()
@@ -159,12 +159,14 @@ def relationnet_test():
     # out = model(x)
     # print(out.shape)
 
+
 def mse_loss_test():
     x = torch.Tensor([[1,2,3],[0,2,3]])
     y = torch.Tensor([[0,0,0],[0,0,0]])
     loss = nn.MSELoss()
     l = loss(x,y)
     print(l)
+
 
 if __name__ == '__main__':
     relationnet_test()

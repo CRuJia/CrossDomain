@@ -120,8 +120,16 @@ class CrossDomainService(PTServingBaseService):
         return output
 
 def relationnet(model_path, **kwargs):
-    feature_model = backbone.Conv4NP()
-    model = RelationNet(feature_model, n_way=5, n_support=5, n_query=5)
+    image_size = 224
+
+    model_w_fc = models.resnet18(pretrained=False)
+    seq = list(model_w_fc.children())[:-2]
+    feature_model = nn.Sequential(*seq)
+
+    feature_model.final_feat_dim = [512, 7, 7]
+
+    # feature_model = backbone.Conv4NP()
+    model = RelationNet(feature_model, n_way=5, n_support=5, n_query=5, use_cuda=False)
 
     seq = list(model.feature.children())
     seq.append(Flatten())

@@ -1,64 +1,100 @@
 import torch
+import os
 import numpy as np
 from options import parse_args
 from models import backbone
+from models import LFTNet
 from models.relationnet import RelationNet
 from data.datamanager import SetDataManager
 from torchvision import models
 import torch.nn as nn
 
-def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epoch, args,use_cuda=True):
-    """
 
-    :param base_data_manager:
-    :param val_loader:
-    :param model:
-    :param start_epoch:
-    :param stop_epoch:
-    :param args:
-    :return:
-    """
+# def train(base_data_manager, val_loader, model, optimizer, start_epoch, stop_epoch, args,use_cuda=True):
+#     """
+#
+#     :param base_data_manager:
+#     :param val_loader:
+#     :param model:
+#     :param start_epoch:
+#     :param stop_epoch:
+#     :param args:
+#     :return:
+#     """
+#
+#     #for validation
+#     max_acc = 0
+#     total_it = 0
+#
+#     #training
+#     for epoch in range(start_epoch,stop_epoch):
+#         data_loader = base_data_manager.get_data_loader(aug=False)
+#
+#         # train loop
+#         model.train()
+#
+#         pre_freq = len(data_loader)/10
+#         avg_model_loss = 0.
+#
+#         for i, (x,_) in enumerate(data_loader):
+#             if use_cuda:
+#                 x = x.cuda()
+#             _,loss = model.set_forward_loss(x)
+#
+#             optimizer.zero_grad()
+#             loss.backward()
+#             optimizer.step()
+#
+#             avg_model_loss +=loss.item()
+#
+#             if (i+1)%pre_freq == 0:
+#                 print('Epoch:{:d} / {:d} | Batch {:d}/{:d} | Model_loss:{:.4f}'.format(epoch+1, stop_epoch, i+1, len(data_loader), avg_model_loss/float(i+1)))
+#
+#
+#         # validate
+#         model.eval()
+#         with torch.no_grad():
+#             acc = model.test_loop(val_loader)
+#             print('Epoch:{:d} / {:d} | ACC {:.4f}%'.format(epoch+1, stop_epoch,acc))
+#
+#         #save
+#         if acc >max_acc:
+#             print("best model! save...")
+#             max_acc = acc
+#             torch.save(model.state_dict(),'./resnet18_best_model.pth')
 
+
+def train(base_data_manager,val_loader, model, start_epoch, stop_epoch, args,use_cuda=True):
     #for validation
     max_acc = 0
     total_it = 0
+    for epoch in range(start_epoch, stop_epoch):
+        train_loader = base_data_manager.get_data_loader(aug=False)
 
-    #training
-    for epoch in range(start_epoch,stop_epoch):
-        data_loader = base_data_manager.get_data_loader(aug=False)
-
-        # train loop
+        #train loop
         model.train()
+        total_it = model.train_loop(epoch, train_loader, total_it)
 
-        pre_freq = len(data_loader)/10
-        avg_model_loss = 0.
-
-        for i, (x,_) in enumerate(data_loader):
-            if use_cuda:
-                x = x.cuda()
-            _,loss = model.set_forward_loss(x)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            avg_model_loss +=loss.item()
-
-            if (i+1)%pre_freq == 0:
-                print('Epoch:{:d} / {:d} | Batch {:d}/{:d} | Model_loss:{:.4f}'.format(epoch+1, stop_epoch, i+1, len(data_loader), avg_model_loss/float(i+1)))
-
-
-        # validate
+        #valid
         model.eval()
         with torch.no_grad():
             acc = model.test_loop(val_loader)
-            print('Epoch:{:d} / {:d} | ACC {:.4f}%'.format(epoch+1, stop_epoch,acc))
 
         #save
-        if acc >max_acc:
-            print("best model! save...")
+        if acc>max_acc:
+            print("best model! save ......")
             max_acc = acc
-            torch.save(model.state_dict(),'./resnet18_best_model.pth')
+            outfile = os.path.join(args.checkpoint_dir,'best_model.tar')
+            model.save(outfile, epoch)
+        else:
+            print("GG! best accuracy  {:f}".format(max_acc))
+
+        if (epoch+1)%args.save_freq ==0 or epoch==stop_epoch-1:
+            outfile = os.path.join(args.checkpoint_dir, '{:d}.tar'.format(epoch+1))
+            model.save(outfile, epoch)
+
+        return
+
 
 
 
@@ -84,13 +120,19 @@ def chose_label_file(dataset):
 
 
 def main():
+    #parse arguments
     args = parse_args('train')
-
     print(args)
 
     #set random seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+
+    #output and rensorboard dir
+    args.tf_dir = '%s/log/%s'%(args.save_dir, args.name)
+    args.checkpoint_dir = '%s/checkpoints/%s'%(args.save_dir, args.name)
+    if not os.path.isdir(args.checkpoint_dir):
+        os.makedirs(args.checkpoint_dir)
 
     #dataloader
     print("\n -- prepare dataloader ---")
@@ -115,14 +157,15 @@ def main():
     print("--- load model ---")
     # feature_model = backbone.Conv4NP()
 
-    model_w_fc = models.resnet18(pretrained=False)
-    seq = list(model_w_fc.children())[:-2]
-    feature_model = nn.Sequential(*seq)
+    # model_w_fc = models.resnet18(pretrained=False)
+    # seq = list(model_w_fc.children())[:-2]
+    # feature_model = nn.Sequential(*seq)
+    #
+    # feature_model.final_feat_dim = [512, 7, 7]
+    #
+    # model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query, use_cuda=args.use_cuda)
 
-    feature_model.final_feat_dim = [512, 7, 7]
-
-    model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query, use_cuda=args.use_cuda)
-
+    model = LFTNet(args,tf_path = args.tf_path)
     if args.use_cuda:
         model.cuda()
         print("model load to GPU")
@@ -130,8 +173,17 @@ def main():
     start_epoch = args.start_epoch
     end_epoch = args.end_epoch
 
-    optimizer = torch.optim.Adam(model.parameters())
-    train(base_data_manager,val_loader,model, optimizer, start_epoch=start_epoch, stop_epoch= end_epoch, args=args)
+    if args.resume !='':
+        pass
+        #TODO
+
+    #training
+
+    # optimizer = torch.optim.Adam(model.parameters())
+    # train(base_data_manager,val_loader,model, optimizer, start_epoch=start_epoch, stop_epoch= end_epoch, args=args)
+
+    print('\n --- start training ---')
+    train(base_data_manager,val_loader, model, start_epoch, end_epoch, args)
 
 
 
