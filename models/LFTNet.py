@@ -13,8 +13,9 @@ class LFTNet(nn.Module):
 
         #tf writer
         self.tf_writer = SummaryWriter(log_dir=tf_path) if tf_path is not None else None
+        self.use_cuda = args.use_cuda
 
-        train_few_shot_params = dict(n_way=args.n_way, n_support=args.n_support, n_query=args.n_query)
+        train_few_shot_params = dict(n_way=args.train_n_way, n_support=args.n_support, n_query=args.n_query)
         if args.method == 'protonet':
             pass #TODO
         elif args.method == 'matchingnet':
@@ -42,7 +43,7 @@ class LFTNet(nn.Module):
         #optimizet
         model_params, ft_params = self.split_model_parameters()
         self.model_optim = torch.optim.Adam(model_params) #TODO add auxiliary parameters
-        self.ft_optim = torch.optim.Adam(ft_params, weight_decay=1e-8, lr=1e-3)
+        # self.ft_optim = torch.optim.Adam(ft_params, weight_decay=1e-8, lr=1e-3)
 
         #total epochs
         self.total_epoch = args.end_epoch
@@ -53,7 +54,7 @@ class LFTNet(nn.Module):
         model_params = []
         ft_params = []
         for n,p in self.model.named_parameters():
-            n = n.splot('.')
+            n = n.split('.')
             if n[-1] == 'gamma' or n[-1] == 'beta':
                 ft_params.append(p)
             else:
@@ -82,6 +83,8 @@ class LFTNet(nn.Module):
 
         #training loop
         for i, (x,_) in enumerate(base_loader):
+            if self.use_cuda:
+                x = x.cuda()
             _, model_loss = self.model.set_forward_loss(x)
 
 
@@ -93,7 +96,7 @@ class LFTNet(nn.Module):
             #loss
             avg_model_loss += model_loss.item()
             if (i+1)%print_freq == 0:
-                print('Epoch {:d}/{:d} | Batch {:d}{:d} | model_loss {:}'.format(epoch+1, self.total_epoch, i+1, len(base_loader), avg_model_loss))
+                print('Epoch {:d}/{:d} | Batch {:d}{:d} | model_loss {:}'.format(epoch+1, self.total_epoch, i+1, len(base_loader), avg_model_loss/float(i+1)))
             if (i+1)% 10 == 0 and self.tf_writer is not None:
                 self.tf_writer.add_scalar('LFTNet/model_loss',model_loss.item(), total_it+1)
             total_it +=1
@@ -109,8 +112,8 @@ class LFTNet(nn.Module):
     def save(self, filename, epoch):
         state = {'epoch':epoch,
                  'model_state':self.model.state_dict(),
-                 'model_optim_state':self.model_optim.state_dict(),
-                 'ft_optim_state':self.ft_optim.state_dict()}
+                 'model_optim_state':self.model_optim.state_dict()}
+                 # 'ft_optim_state':self.ft_optim.state_dict()}
         torch.save(state, filename)
 
     # load function
@@ -118,7 +121,7 @@ class LFTNet(nn.Module):
         state = torch.load(filename)
         self.model.load_state_dict(state['model_state'])
         self.model_optim.load_state_dict(state['model_optim_state'])
-        self.ft_optim.load_state_dict(state['ft_optim_state'])
+        # self.ft_optim.load_state_dict(state['ft_optim_state'])
         return state['epoch']+1
 
 

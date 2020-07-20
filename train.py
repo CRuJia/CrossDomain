@@ -3,7 +3,7 @@ import os
 import numpy as np
 from options import parse_args
 from models import backbone
-from models import LFTNet
+from models.LFTNet import LFTNet
 from models.relationnet import RelationNet
 from data.datamanager import SetDataManager
 from torchvision import models
@@ -93,7 +93,7 @@ def train(base_data_manager,val_loader, model, start_epoch, stop_epoch, args,use
             outfile = os.path.join(args.checkpoint_dir, '{:d}.tar'.format(epoch+1))
             model.save(outfile, epoch)
 
-        return
+    return
 
 
 
@@ -144,7 +144,6 @@ def main():
     else:
         image_size = 224
 
-    image_size = 224
 
     train_few_shot_params = dict(n_way=args.train_n_way, n_support=args.n_support, n_query=args.n_query, n_episode=args.n_episode)
     base_data_manager = SetDataManager(image_size=image_size, **train_few_shot_params, data_file=train_files)
@@ -164,8 +163,8 @@ def main():
     # feature_model.final_feat_dim = [512, 7, 7]
     #
     # model = RelationNet(feature_model, n_way=args.train_n_way, n_support=args.n_support, n_query = args.n_query, use_cuda=args.use_cuda)
-
-    model = LFTNet(args,tf_path = args.tf_path)
+    print(args)
+    model = LFTNet(args)
     if args.use_cuda:
         model.cuda()
         print("model load to GPU")
